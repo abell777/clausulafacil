@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analizar contrato — ClausulaFácil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2430; --ink-soft:#4B5768;
+    --paper:#FBFAF6; --paper-raised:#FFFFFF;
+    --tint:#FFF6DA; --rule:#DCD5C3; --rule-soft:#EAE4D6;
+    --verde:#2F7A4D; --verde-bg:#E3F0E7;
+    --ambar:#A9700D; --ambar-bg:#FCEFD8;
+    --rojo:#B23A2E; --rojo-bg:#F8E4E1;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'Inter',sans-serif;line-height:1.5;}
+  h1,h2,h3{font-family:'Fraunces',serif;font-weight:600;margin:0;letter-spacing:-0.01em;}
+  .wrap{max-width:880px;margin:0 auto;padding:0 32px;}
+  a{color:inherit;text-decoration:none;}
+
+  header{border-bottom:1px solid var(--rule-soft);padding:18px 0;}
+  .nav-row{display:flex;align-items:center;justify-content:space-between;max-width:880px;margin:0 auto;padding:0 32px;}
+  .brand{font-family:'Fraunces',serif;font-weight:600;font-size:20px;}
+  .brand em{font-style:italic;font-weight:500;color:var(--verde);}
+  .step-indicator{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--ink-soft);}
+
+  main{padding:64px 0 100px;}
+  .page-head{margin-bottom:40px;}
+  .page-head h1{font-size:32px;margin-bottom:10px;}
+  .page-head p{color:var(--ink-soft);font-size:16px;margin:0;}
+
+  /* ---- Dropzone ---- */
+  #view-upload .dropzone{
+    border:2px dashed var(--rule);border-radius:16px;background:var(--paper-raised);
+    padding:64px 32px;text-align:center;cursor:pointer;transition:border-color .15s ease, background .15s ease;
+  }
+  #view-upload .dropzone:hover, #view-upload .dropzone.drag{
+    border-color:var(--ink);background:var(--tint);
+  }
+  .dz-icon{margin-bottom:18px;}
+  .dropzone h3{font-size:19px;margin-bottom:8px;}
+  .dropzone p{color:var(--ink-soft);font-size:14.5px;margin:0 0 20px;}
+  .dropzone input{display:none;}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:12px 22px;border-radius:8px;font-weight:600;font-size:15px;
+    cursor:pointer;border:1px solid transparent;font-family:'Inter',sans-serif;
+  }
+  .btn-primary{background:var(--ink);color:var(--paper);}
+  .btn-outline{background:transparent;color:var(--ink);border-color:var(--ink);}
+  .file-hint{margin-top:22px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);}
+
+  .free-note{
+    margin-top:24px;display:flex;gap:10px;align-items:flex-start;
+    background:var(--tint);border:1px solid var(--rule);border-radius:10px;padding:14px 16px;font-size:14px;color:var(--ink-soft);
+  }
+
+  /* ---- Processing state ---- */
+  #view-processing{display:none;text-align:center;padding:80px 0;}
+  .spinner{
+    width:46px;height:46px;border-radius:50%;border:3px solid var(--rule);
+    border-top-color:var(--ink);margin:0 auto 26px;animation:spin 0.9s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  #view-processing h3{font-size:20px;margin-bottom:8px;}
+  #view-processing p{color:var(--ink-soft);font-size:14.5px;}
+  .proc-steps{margin-top:30px;display:inline-flex;flex-direction:column;gap:10px;text-align:left;}
+  .proc-step{display:flex;align-items:center;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--rule);}
+  .proc-step.active{color:var(--ink);}
+  .proc-step.done{color:var(--verde);}
+
+  /* ---- Results ---- */
+  #view-results{display:none;}
+  .result-summary{
+    display:flex;gap:16px;margin-bottom:32px;flex-wrap:wrap;
+  }
+  .sum-card{
+    flex:1;min-width:140px;background:var(--paper-raised);border:1px solid var(--rule);border-radius:12px;padding:18px 20px;
+  }
+  .sum-card .n{font-family:'Fraunces',serif;font-size:28px;font-weight:600;}
+  .sum-card .l{font-size:12.5px;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:0.03em;}
+  .sum-card.verde .n{color:var(--verde);}
+  .sum-card.ambar .n{color:var(--ambar);}
+  .sum-card.rojo .n{color:var(--rojo);}
+
+  .report-shell{background:var(--paper-raised);border:1px solid var(--rule);border-radius:16px;overflow:hidden;}
+  .r-row{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding:24px 28px;border-bottom:1px solid var(--rule-soft);}
+  .r-row:last-child{border-bottom:none;}
+  .r-left{max-width:600px;}
+  .r-left .r-num{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);margin-bottom:6px;}
+  .r-left h4{font-size:16.5px;font-weight:600;margin-bottom:6px;font-family:'Inter',sans-serif;}
+  .r-left p{margin:0;color:var(--ink-soft);font-size:14.5px;}
+  .r-badge{flex-shrink:0;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;padding:6px 13px;border-radius:20px;white-space:nowrap;}
+  .tag-verde{background:var(--verde-bg);color:var(--verde);}
+  .tag-ambar{background:var(--ambar-bg);color:var(--ambar);}
+  .tag-rojo{background:var(--rojo-bg);color:var(--rojo);}
+
+  .locked-block{position:relative;padding:34px 28px;text-align:center;background:repeating-linear-gradient(135deg, var(--rule-soft) 0 2px, transparent 2px 10px);}
+  .locked-inner{background:var(--paper-raised);border:1px solid var(--rule);border-radius:12px;padding:26px 28px;max-width:440px;margin:0 auto;}
+  .locked-inner p{margin:0 0 16px;font-size:15px;color:var(--ink-soft);}
+  .locked-inner strong{color:var(--rojo);}
+
+  .disclaimer{margin-top:28px;font-size:13.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding-top:20px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav-row">
+    <a href="clausulafacil.html" class="brand">Cláusula<em>Fácil</em></a>
+    <span class="step-indicator" id="step-indicator">PASO 1 DE 2 · SUBIR CONTRATO</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div id="view-upload">
+    <div class="page-head">
+      <h1>Sube tu contrato de alquiler</h1>
+      <p>Solo contratos de vivienda habitual, en PDF. El primer tramo del informe es gratis.</p>
+    </div>
+
+    <div class="dropzone" id="dropzone">
+      <div class="dz-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0-12 4 4m-4-4-4 4" stroke="#1B2430" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="#1B2430" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <h3>Arrastra aquí tu PDF</h3>
+      <p>o selecciónalo desde tu ordenador o móvil</p>
+      <label class="btn btn-primary">
+        Elegir archivo
+        <input type="file" id="file-input" accept="application/pdf">
+      </label>
+      <div class="file-hint">PDF · máx. 15 MB · tus datos no se comparten con terceros</div>
+    </div>
+
+    <div class="free-note">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="9" stroke="#4B5768" stroke-width="1.5"/><path d="M12 8v5m0 3h.01" stroke="#4B5768" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span>Analizamos el contrato completo, pero solo mostramos el detalle de las primeras cláusulas de forma gratuita. Si quieres ver el informe entero, lo desbloqueas después por 2€.</span>
+    </div>
+  </div>
+
+  <div id="view-processing">
+    <div class="spinner"></div>
+    <h3>Estamos leyendo tu contrato</h3>
+    <p>Esto suele tardar entre 20 y 40 segundos.</p>
+    <div class="proc-steps">
+      <div class="proc-step" data-s="1">— Extrayendo el texto del PDF</div>
+      <div class="proc-step" data-s="2">— Identificando las cláusulas</div>
+      <div class="proc-step" data-s="3">— Comparando con la LAU</div>
+      <div class="proc-step" data-s="4">— Generando tu informe</div>
+    </div>
+  </div>
+
+  <div id="view-results">
+    <div class="page-head">
+      <h1>Tu informe está listo</h1>
+      <p>contrato_alquiler_firmado.pdf · 8 cláusulas detectadas</p>
+    </div>
+
+    <div class="result-summary">
+      <div class="sum-card verde"><div class="n">4</div><div class="l">Normales</div></div>
+      <div class="sum-card ambar"><div class="n">2</div><div class="l">Para revisar</div></div>
+      <div class="sum-card rojo"><div class="n">1</div><div class="l">Inusuales</div></div>
+    </div>
+
+    <div class="report-shell">
+      <div class="r-row">
+        <div class="r-left">
+          <div class="r-num">Cláusula 1 · Identificación de las partes</div>
+          <h4>Arrendador y arrendatario correctamente identificados</h4>
+          <p>Incluye DNI, domicilio y datos de contacto de ambas partes, tal como exige la ley.</p>
+        </div>
+        <span class="r-badge tag-verde">Normal</span>
+      </div>
+      <div class="r-row">
+        <div class="r-left">
+          <div class="r-num">Cláusula 3 · Duración</div>
+          <h4>Un año con prórrogas anuales</h4>
+          <p>Se ajusta al mínimo legal de cinco años para arrendador persona física.</p>
+        </div>
+        <span class="r-badge tag-verde">Normal</span>
+      </div>
+      <div class="r-row">
+        <div class="r-left">
+          <div class="r-num">Cláusula 5 · Fianza</div>
+          <h4>Fianza de tres mensualidades</h4>
+          <p>La ley fija una mensualidad como fianza legal. El resto se pacta como garantía adicional, y conviene que conste por separado.</p>
+        </div>
+        <span class="r-badge tag-ambar">Revisar</span>
+      </div>
+      <div class="r-row">
+        <div class="r-left">
+          <div class="r-num">Cláusula 6 · Actualización de la renta</div>
+          <h4>Actualización anual según IPC</h4>
+          <p>Es el criterio más habitual y está dentro de lo que permite la normativa vigente.</p>
+        </div>
+        <span class="r-badge tag-verde">Normal</span>
+      </div>
+
+      <div class="locked-block">
+        <div class="locked-inner">
+          <p>Quedan <strong>4 cláusulas más</strong> por revisar en este contrato — <strong>una de ellas marcada en rojo</strong>.</p>
+          <a href="#" class="btn btn-primary">Desbloquear informe completo — 2€</a>
+        </div>
+      </div>
+    </div>
+
+    <p class="disclaimer">ClausulaFácil te ayuda a entender tu contrato en lenguaje llano. No sustituye el consejo de un abogado colegiado. Ante cualquier duda importante, consulta con un profesional.</p>
+  </div>
+
+</main>
+
+<script>
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('file-input');
+  const viewUpload = document.getElementById('view-upload');
+  const viewProcessing = document.getElementById('view-processing');
+  const viewResults = document.getElementById('view-results');
+  const stepIndicator = document.getElementById('step-indicator');
+
+  function startAnalysis(){
+    viewUpload.style.display = 'none';
+    viewProcessing.style.display = 'block';
+    stepIndicator.textContent = 'PASO 2 DE 2 · ANALIZANDO';
+
+    const steps = document.querySelectorAll('.proc-step');
+    let i = 0;
+    const interval = setInterval(()=>{
+      if(i>0) steps[i-1].classList.replace('active','done');
+      if(i < steps.length){ steps[i].classList.add('active'); i++; }
+      else{
+        clearInterval(interval);
+        viewProcessing.style.display = 'none';
+        viewResults.style.display = 'block';
+        stepIndicator.textContent = 'INFORME GENERADO';
+      }
+    }, 700);
+  }
+
+  fileInput.addEventListener('change', (e)=>{ if(e.target.files.length) startAnalysis(); });
+  dropzone.addEventListener('click', ()=> fileInput.click());
+  ['dragenter','dragover'].forEach(ev=> dropzone.addEventListener(ev, (e)=>{ e.preventDefault(); dropzone.classList.add('drag'); }));
+  ['dragleave','drop'].forEach(ev=> dropzone.addEventListener(ev, (e)=>{ e.preventDefault(); dropzone.classList.remove('drag'); }));
+  dropzone.addEventListener('drop', (e)=>{ if(e.dataTransfer.files.length) startAnalysis(); });
+</script>
+
+</body>
+</html>

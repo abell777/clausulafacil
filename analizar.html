@@ -205,9 +205,9 @@
     }, 900);
   }
 
-  function renderInforme(informe, nombreArchivo){
+  function renderInforme(informe, nombreArchivo, desbloqueado){
     document.getElementById('results-subtitle').textContent =
-      `${nombreArchivo} · ${informe.clausulas.length} cláusulas detectadas`;
+      `${nombreArchivo} · ${informe.clausulas.length} cláusulas detectadas${desbloqueado ? ' · Informe completo' : ''}`;
 
     const r = informe.resumen || {verdes:0, ambar:0, rojos:0};
     document.getElementById('result-summary').innerHTML = `
@@ -223,8 +223,8 @@
       shell.innerHTML += `<div class="r-row"><div class="r-left"><p>${informe.aviso_tipo_otro}</p></div></div>`;
     }
 
-    const visibles = informe.clausulas.slice(0, CLAUSULAS_GRATIS);
-    const ocultas = informe.clausulas.slice(CLAUSULAS_GRATIS);
+    const visibles = desbloqueado ? informe.clausulas : informe.clausulas.slice(0, CLAUSULAS_GRATIS);
+    const ocultas = desbloqueado ? [] : informe.clausulas.slice(CLAUSULAS_GRATIS);
 
     visibles.forEach(c=>{
       shell.innerHTML += `
@@ -306,7 +306,9 @@
         return;
       }
 
-      renderInforme(informe, file.name);
+      renderInforme(informe, file.name, false);
+      sessionStorage.setItem('cf_informe', JSON.stringify(informe));
+      sessionStorage.setItem('cf_nombre_archivo', file.name);
       viewProcessing.style.display = 'none';
       viewResults.style.display = 'block';
       stepIndicator.textContent = 'INFORME GENERADO';
@@ -315,6 +317,51 @@
       clearInterval(interval);
       console.error(e);
       mostrarError('No hemos podido conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.');
+    }
+  }
+
+  // ---- Comprobar si venimos de un pago en Stripe ----
+  async function comprobarVueltaDePago(){
+    const params = new URLSearchParams(window.location.search);
+    const pago = params.get('pago');
+    const sessionId = params.get('session_id');
+
+    if (pago === 'cancelado') {
+      alert('El pago se ha cancelado. Puedes intentarlo de nuevo cuando quieras.');
+      history.replaceState({}, '', window.location.pathname);
+      return;
+    }
+
+    if (pago === 'exito' && sessionId) {
+      const informeGuardado = sessionStorage.getItem('cf_informe');
+      const nombreGuardado = sessionStorage.getItem('cf_nombre_archivo') || 'tu contrato';
+
+      viewUpload.style.display = 'none';
+      viewProcessing.style.display = 'block';
+      document.querySelector('#view-processing h3').textContent = 'Confirmando tu pago';
+      document.querySelector('#view-processing p').textContent = 'Un momento, estamos verificándolo con Stripe.';
+
+      try {
+        const resp = await fetch(`/api/verificar-pago?session_id=${encodeURIComponent(sessionId)}`);
+        const data = await resp.json();
+
+        if (data.pagado && informeGuardado) {
+          const informe = JSON.parse(informeGuardado);
+          renderInforme(informe, nombreGuardado, true);
+          viewProcessing.style.display = 'none';
+          viewResults.style.display = 'block';
+          stepIndicator.textContent = 'INFORME DESBLOQUEADO';
+        } else if (data.pagado && !informeGuardado) {
+          mostrarError('Tu pago se ha confirmado, pero no encontramos el contrato en este navegador. Vuelve a subir el mismo PDF: no volverás a pagar por él, solo necesitamos leerlo de nuevo para mostrarte el informe completo.');
+        } else {
+          mostrarError('No hemos podido confirmar tu pago todavía. Si el cargo se ha realizado, escríbenos y lo revisamos.');
+        }
+      } catch (e) {
+        console.error(e);
+        mostrarError('No hemos podido verificar tu pago. Inténtalo de nuevo en un momento.');
+      }
+
+      history.replaceState({}, '', window.location.pathname);
     }
   }
 
@@ -334,6 +381,8 @@
     fileInput.value = '';
     document.querySelectorAll('.proc-step').forEach(s=>s.classList.remove('active','done'));
   });
+
+  comprobarVueltaDePago();
 </script>
 
 </body>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analizar contrato — ClausulaFácil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1B2430; --ink-soft:#4B5768;
+  --paper:#FBFAF6; --paper-raised:#FFFFFF;
+  --tint:#FFF6DA; --rule:#DCD5C3; --rule-soft:#EAE4D6;
+  --verde:#2F7A4D; --verde-bg:#E3F0E7;
+  --ambar:#A9700D; --ambar-bg:#FCEFD8;
+  --rojo:#B23A2E; --rojo-bg:#F8E4E1;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'Inter',sans-serif;line-height:1.5;}
+h1,h2,h3{font-family:'Fraunces',serif;font-weight:600;margin:0;letter-spacing:-0.01em;}
+.wrap{max-width:760px;margin:0 auto;padding:0 32px;}
+a{color:inherit;text-decoration:none;}
+header{border-bottom:1px solid var(--rule-soft);padding:18px 0;}
+.nav-row{display:flex;align-items:center;justify-content:space-between;max-width:760px;margin:0 auto;padding:0 32px;}
+.brand{font-family:'Fraunces',serif;font-weight:600;font-size:20px;}
+.brand em{font-style:italic;font-weight:500;color:var(--verde);}
+.step-indicator{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--ink-soft);}
+main{padding:56px 0 100px;}
+.page-head{margin-bottom:36px;}
+.page-head h1{font-size:30px;margin-bottom:10px;}
+.page-head p{color:var(--ink-soft);font-size:16px;margin:0;}
+
+.launch-note{
+  display:flex;gap:10px;align-items:flex-start;
+  background:var(--tint);border:1px solid var(--rule);border-radius:10px;padding:14px 16px;font-size:14.5px;color:var(--ink);margin-bottom:32px;
+}
+
+/* ---- Dropzone ---- */
+.dropzone{
+  border:2px dashed var(--rule);border-radius:16px;background:var(--paper-raised);
+  padding:48px 32px;text-align:center;cursor:pointer;transition:border-color .15s ease, background .15s ease;
+}
+.dropzone:hover, .dropzone.drag{
+  border-color:var(--ink);background:var(--tint);
+}
+.dz-icon{margin-bottom:16px;}
+.dropzone h3{font-size:18px;margin-bottom:6px;}
+.dropzone p{color:var(--ink-soft);font-size:14.5px;margin:0 0 18px;}
+.dropzone input{display:none;}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px 22px;border-radius:8px;font-weight:600;font-size:15px;
+  cursor:pointer;border:1px solid transparent;font-family:'Inter',sans-serif;
+}
+.btn-primary{background:var(--ink);color:var(--paper);}
+.btn-outline{background:transparent;color:var(--ink);border-color:var(--ink);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.file-hint{margin-top:18px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);}
+.file-picked{
+  margin-top:18px;font-size:14px;color:var(--verde);font-weight:600;display:none;
+}
+
+/* ---- Datos + envío ---- */
+#view-envio{display:none;margin-top:36px;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:13.5px;font-weight:600;margin-bottom:6px;}
+.field input{
+  width:100%;padding:11px 14px;border:1px solid var(--rule);border-radius:8px;
+  font-family:'Inter',sans-serif;font-size:15px;background:var(--paper-raised);color:var(--ink);
+}
+.field input:focus{outline:none;border-color:var(--ink);}
+
+.send-options{
+  display:flex;gap:14px;flex-wrap:wrap;margin-top:24px;
+}
+.send-options .btn{flex:1;min-width:200px;}
+
+.reminder{
+  margin-top:18px;display:flex;gap:10px;align-items:flex-start;
+  background:var(--ambar-bg);border:1px solid var(--rule);border-radius:10px;padding:14px 16px;font-size:14px;color:var(--ink);
+}
+.reminder strong{color:var(--ambar);}
+
+.how-it-works{
+  margin-top:44px;border-top:1px solid var(--rule-soft);padding-top:32px;
+}
+.how-it-works h3{font-size:17px;margin-bottom:16px;}
+.hiw-steps{display:flex;flex-direction:column;gap:14px;}
+.hiw-step{display:flex;gap:14px;align-items:flex-start;}
+.hiw-num{
+  flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--paper);
+  font-family:'IBM Plex Mono',monospace;font-size:13px;display:flex;align-items:center;justify-content:center;
+}
+.hiw-step p{margin:0;font-size:14.5px;color:var(--ink-soft);}
+.hiw-step strong{color:var(--ink);}
+
+.price-mini{
+  margin-top:32px;background:var(--paper-raised);border:1px solid var(--rule);border-radius:12px;padding:20px 22px;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+}
+.price-mini .p-text{font-size:14.5px;color:var(--ink-soft);}
+.price-mini .p-text strong{color:var(--ink);}
+
+.disclaimer{margin-top:36px;font-size:13.5px;color:var(--ink-soft);border-top:1px solid var(--rule-soft);padding-top:20px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav-row">
+    <a href="index.html" class="brand">Cláusula<em>Fácil</em></a>
+    <span class="step-indicator" id="step-indicator">ENVÍANOS TU CONTRATO</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="page-head">
+    <h1>Sube tu contrato de alquiler</h1>
+    <p>Solo contratos de vivienda habitual, en PDF.</p>
+  </div>
+
+  <div class="launch-note">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="9" stroke="#4B5768" stroke-width="1.5"/><path d="M12 8v5m0 3h.01" stroke="#4B5768" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <span>Estamos en fase de lanzamiento: de momento revisamos cada contrato a mano, con el mismo criterio basado en la LAU. Recibirás tu informe por email en menos de 24 horas.</span>
+  </div>
+
+  <div id="view-seleccion">
+    <div class="dropzone" id="dropzone">
+      <div class="dz-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0-12 4 4m-4-4-4 4" stroke="#1B2430" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="#1B2430" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <h3>Elige tu PDF</h3>
+      <p>Lo seleccionas aquí para tenerlo listo y luego lo adjuntas al enviarlo</p>
+      <label class="btn btn-primary">
+        Elegir archivo
+        <input type="file" id="file-input" accept="application/pdf">
+      </label>
+      <div class="file-hint">PDF · máx. 15 MB · tus datos no se comparten con terceros</div>
+      <div class="file-picked" id="file-picked"></div>
+    </div>
+  </div>
+
+  <div id="view-envio">
+    <div class="field">
+      <label for="nombre-input">Tu nombre</label>
+      <input type="text" id="nombre-input" placeholder="Cómo te llamas">
+    </div>
+    <div class="field">
+      <label for="email-input">Tu email (para enviarte el informe)</label>
+      <input type="email" id="email-input" placeholder="tucorreo@ejemplo.com">
+    </div>
+
+    <div class="reminder">
+      <span><strong>Importante:</strong> al pulsar uno de los botones de abajo se abrirá tu email o WhatsApp con el mensaje ya escrito. No olvides <strong>adjuntar el PDF</strong> (<span id="nombre-archivo-recordatorio"></span>) antes de enviarlo.</span>
+    </div>
+
+    <div class="send-options">
+      <a class="btn btn-primary" id="btn-email" target="_blank" rel="noopener">Enviar por email</a>
+      <a class="btn btn-outline" id="btn-whatsapp" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+    </div>
+
+    <div class="price-mini">
+      <div class="p-text">Un contrato: <strong>2€</strong> · Pack de 3: <strong>4€</strong></div>
+      <div class="p-text">Te decimos cómo pagar cuando te enviemos el informe.</div>
+    </div>
+  </div>
+
+  <div class="how-it-works">
+    <h3>Cómo funciona ahora mismo</h3>
+    <div class="hiw-steps">
+      <div class="hiw-step">
+        <div class="hiw-num">1</div>
+        <p><strong>Eliges tu PDF</strong> arriba y nos lo envías por email o WhatsApp.</p>
+      </div>
+      <div class="hiw-step">
+        <div class="hiw-num">2</div>
+        <p><strong>Lo revisamos a mano</strong>, cláusula por cláusula, siguiendo el mismo criterio que usará la IA cuando esté activa.</p>
+      </div>
+      <div class="hiw-step">
+        <div class="hiw-num">3</div>
+        <p><strong>Te devolvemos el informe</strong> por email en menos de 24 horas, con el pago (2€ o 4€) indicado en el mismo mensaje.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="disclaimer">ClausulaFácil te ayuda a entender tu contrato en lenguaje llano. No sustituye el consejo de un abogado colegiado. Ante cualquier duda importante, consulta con un profesional.</p>
+
+</main>
+
+<script>
+/* ============================================================
+   CONFIGURA ESTO ANTES DE PUBLICAR — son los 2 únicos datos
+   que hay que rellenar para que funcione el envío:
+   ============================================================ */
+const EMAIL_CONTACTO = 'jawedn044@gmail.com';        // tu email real
+const WHATSAPP_NUMERO = '34644734911';               // tu número, con prefijo de país, sin '+' ni espacios
+/* ============================================================ */
+
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('file-input');
+const filePicked = document.getElementById('file-picked');
+const viewEnvio = document.getElementById('view-envio');
+const nombreInput = document.getElementById('nombre-input');
+const emailInput = document.getElementById('email-input');
+const btnEmail = document.getElementById('btn-email');
+const btnWhatsapp = document.getElementById('btn-whatsapp');
+const nombreArchivoRecordatorio = document.getElementById('nombre-archivo-recordatorio');
+
+let archivoSeleccionado = null;
+
+function onFileSelected(file){
+  if (file.type !== 'application/pdf') {
+    alert('Por ahora solo aceptamos archivos PDF.');
+    return;
+  }
+  archivoSeleccionado = file;
+  filePicked.textContent = `✓ Seleccionado: ${file.name}`;
+  filePicked.style.display = 'block';
+  nombreArchivoRecordatorio.textContent = file.name;
+  viewEnvio.style.display = 'block';
+  actualizarEnlaces();
+  viewEnvio.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function actualizarEnlaces(){
+  const nombre = nombreInput.value.trim() || '(sin indicar)';
+  const email = emailInput.value.trim() || '(sin indicar)';
+  const archivo = archivoSeleccionado ? archivoSeleccionado.name : '(sin seleccionar)';
+
+  const asunto = 'Contrato de alquiler para analizar — ClausulaFácil';
+  const cuerpo =
+`Hola,
+
+Os adjunto mi contrato de alquiler (${archivo}) para que lo analicéis.
+
+Nombre: ${nombre}
+Email para el informe: ${email}
+
+Gracias.`;
+
+  btnEmail.href = `mailto:${EMAIL_CONTACTO}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+
+  const mensajeWsp =
+`Hola, quiero que analicéis mi contrato de alquiler.
+Nombre: ${nombre}
+Email para el informe: ${email}
+(Os adjunto ahora mismo el PDF: ${archivo})`;
+
+  btnWhatsapp.href = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(mensajeWsp)}`;
+}
+
+fileInput.addEventListener('change', (e)=>{ if(e.target.files.length) onFileSelected(e.target.files[0]); });
+dropzone.addEventListener('click', ()=> fileInput.click());
+['dragenter','dragover'].forEach(ev=> dropzone.addEventListener(ev, (e)=>{ e.preventDefault(); dropzone.classList.add('drag'); }));
+['dragleave','drop'].forEach(ev=> dropzone.addEventListener(ev, (e)=>{ e.preventDefault(); dropzone.classList.remove('drag'); }));
+dropzone.addEventListener('drop', (e)=>{
+  e.preventDefault(); dropzone.classList.remove('drag');
+  if(e.dataTransfer.files.length) onFileSelected(e.dataTransfer.files[0]);
+});
+
+nombreInput.addEventListener('input', actualizarEnlaces);
+emailInput.addEventListener('input', actualizarEnlaces);
+</script>
+
+</body>
+</html>
